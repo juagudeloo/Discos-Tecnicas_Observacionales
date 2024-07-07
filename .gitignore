@@ -2,6 +2,7 @@
 /Data
 /*.odg
 /*.out
+/.vitual_documents
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
