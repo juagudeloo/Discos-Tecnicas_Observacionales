@@ -180,6 +180,7 @@ def main():
             final_obs_table[j.colnames[7] + '_' + str(counter//3)] = j[j.colnames[7]]
             final_obs_table[j.colnames[11] + '_' + j.colnames[6] + '_' + str(counter//3)] = j[j.colnames[11]]
             counter += 1
+        print(f"Saving .csv for {foc} object")
         final_obs_table.write(parsed_args.output_dir+f'/Table_{foc}.csv', overwrite=True)        
 
 
