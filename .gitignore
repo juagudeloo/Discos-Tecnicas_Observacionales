@@ -1,5 +1,7 @@
 # My own ignores
 /Data
+/*.odg
+/*.out
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
