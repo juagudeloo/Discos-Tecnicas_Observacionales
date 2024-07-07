@@ -22,8 +22,9 @@ Still in development...
 
 ## General parameters
 
-The scripts receive the following parameters (you can check them also by typing `python3 photUN_SPITZER.py --help` or `python3 photUN_WISE.py --help`)
+The scripts receive the following parameters (you can check them also by typing `python3 photUN_SPITZER.py --help` or `python3 photUN_WISE.py --help`).
 
+```
 positional arguments:
   {IRAC,WISE}           String type that specifies 'IRAC' or 'WISE' for the instrument to analyze.
 
@@ -44,3 +45,4 @@ options:
   -v, --verbose
 
 It is intended to work with MIPS in the future.
+```
