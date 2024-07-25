@@ -8,6 +8,16 @@ This code was developed to apply photometric measurements on the channels 1,2,3,
 
 This script deals with IRAC or WISE channels.
 
+for running the code you may specify the instrument you want to work with, the directory where to find the .fits files and the directory where to find the catalog
+```
+python3 photUN.py <instrument> -fd <fits_directory> -cad <catalog_directory>
+```
+for example
+```
+python3 photUN.py IRAC -fd /IRAC_fits -cad /Catalog
+```
+There are also other optional parameters that are explained in the section **General parameters**.
+
 ### SPITZER_notebook.ipynb
 
 This jupyter notebook develops and explains all the steps done to obtain the `photUN.py IRAC` code to work.
