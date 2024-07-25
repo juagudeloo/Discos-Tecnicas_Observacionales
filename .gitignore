@@ -1,5 +1,6 @@
 # My own ignores
 /Data
+/outputs
 /*.odg
 /*.out
 /.vitual_documents

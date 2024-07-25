@@ -2,6 +2,8 @@ import numpy as np
 
 import glob
 
+import os 
+
 from photutils.aperture import CircularAperture
 from photutils.aperture import CircularAnnulus
 from photutils.aperture import aperture_photometry
@@ -35,7 +37,7 @@ parser.add_argument('-fd', '--fits_dir', dest='fits_dir', required=True,
                     type=str, help='A string type that indicates the path to the .fits files.')
 parser.add_argument('-cad', '--catalog_dir', dest='catalog_dir', required=True,
                     type=str, help='A string type that indicates the path to the GAIA DR2 catalog.')
-parser.add_argument('-od', '--output_dir', dest='output_dir', default="./",
+parser.add_argument('-od', '--output_dir', dest='output_dir', default="./outputs/",
                     type=str, help='A string type that indicates the path to save the resulting .csv output file.')
 parser.add_argument('-r', '--circular_aperture', dest='r', default = 6,
                     type=int, help='Integer value that determines the circular aperture in pixels.')
@@ -46,6 +48,9 @@ parser.add_argument('-r_out', '--annular_ext_radius', dest='r_out', default = 14
 parser.add_argument('-v', '--verbose', dest="verbose", action='store_true')
 
 parsed_args = parser.parse_args()
+
+if not os.path.exists(parsed_args.output_dir):
+    os.makedirs(parsed_args.output_dir)
 
 if parsed_args.verbose:
     print(f"""
@@ -125,9 +130,14 @@ def main():
 
 
     #----#  List with all the main objects that are centered by the telescope.
-    focus_object = []             
+    focus_object = []     
+    if parsed_args.instrument == "IRAC":
+        identifier = 'OBJECT'
+    if parsed_args.instrument == "WISE":    
+        identifier = 'COADDID'   
+
     for m in all_tables:
-        ob = m['OBJECT'][0]
+        ob = m[identifier][0]
         if ob not in focus_object:
             focus_object.append(ob) 
     #----#  Dictionary with each observed object.
@@ -138,7 +148,7 @@ def main():
     #----#  Fill the dictionary with the table of each object.
     for n in all_tables:
         for p in focus_object:
-            ob = n['OBJECT'][0]
+            ob = n[identifier][0]
             if ob == p:
                 final_filter[ob].append(n.copy())  # Example: filtro_final = {'SA98':[tabla1,tabla2,tabla3,..], ... , 'SA92':[tabla1,tabla2,tabla3,..]}
     
@@ -217,10 +227,43 @@ def Photometry_Data_Table(fits_name, fits_path, catalog, r, r_in, r_out, center_
         w = WCS(FitsData[0].header)
         image = FitsData[0].data
         fits_header = FitsData[0].header
-        itime  = fits_header['EXPTIME'] 
-        ifilter = fits_header['CHNLNUM']  
-        DateObs = fits_header['DATE_OBS']
-        epadu = fits_header['GAIN']
+        if parsed_args.instrument == "IRAC":
+            itime  = fits_header['EXPTIME'] 
+            ifilter = fits_header['CHNLNUM']  
+            DateObs = fits_header['DATE_OBS']
+            epadu = fits_header['GAIN']
+            #zero points for each channel.
+            if ifilter == 1:
+                zmag =  18.8027
+            elif ifilter == 2:
+                zmag = 18.3177
+            elif ifilter == 3:
+                zmag = 17.8331
+            elif ifilter == 4:
+                zmag = 17.2120
+            else:
+                zmag = 17.2120
+        if parsed_args.instrument == "WISE":
+            ifilter = fits_header['BAND']
+            #zero points and electronic gain for each channel.
+            if ifilter == 1:
+                epadu = 3.20
+                itime  = 7.7 #sec
+            if ifilter == 2:
+                epadu = 3.83
+                itime  = 7.7 #sec
+            if ifilter == 3:
+                epadu = 6.83
+                itime = 8.8*fits_header['FRC8P8ET'] \
+                + 4.4*fits_header['FRC4P4ET'] \
+                + 2.2*fits_header['FRC2P2ET'] \
+                + 1.1**fits_header['FRC1P1ET'] #sec
+            if ifilter == 4:
+                epadu = 24.50
+                itime  = 8.8 #sec
+            DateObs = fits_header['MIDOBS'] # MID VALUE OF the interval of dates of observation
+            #zero points for each channel.
+            zmag = fits_header['MAGZP']
 
     # Writing a txt file that contains the information of the objects that are contained in the picture.
     with open(parsed_args.output_dir+f"Objectlist_{fits_name}.out", "w") as NewListO:
@@ -285,16 +328,6 @@ def Photometry_Data_Table(fits_name, fits_path, catalog, r, r_in, r_out, center_
 
     # Centroides de coordenadas de las estrellas 
     starloc = list(zip(x,y))
-    if ifilter == 1:
-        zmag =  18.8027
-    elif ifilter == 2:
-        zmag = 18.3177
-    elif ifilter == 3:
-        zmag = 17.8331
-    elif ifilter == 4:
-        zmag = 17.2120
-    else:
-        zmag = 17.2120
         
     # Extracción señal de cada estrella
     aperture = CircularAperture(starloc, r=r)
@@ -336,7 +369,10 @@ def Photometry_Data_Table(fits_name, fits_path, catalog, r, r_in, r_out, center_
     # phot_table['Rint'] = r_in
     # phot_table['Rout'] = r_out
     # phot_table['AIRTEMP'] = ccdtemp
-    phot_table['OBJECT'] = fits_header['OBJECT']
+    if parsed_args.instrument == "IRAC":
+        phot_table['OBJECT'] = fits_header['OBJECT']
+    if parsed_args.instrument == "WISE":
+        phot_table['COADDID'] = fits_header['COADDID']
     # Se buscan los indices en donde las magnitudes sean NaN y se eliminan
     index_nan = np.argwhere(np.isnan(phot_table[name_mag + '_mag'].data)) 
     phot_table.remove_rows(index_nan)
