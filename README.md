@@ -4,21 +4,17 @@
 
 This code was developed to apply photometric measurements on the channels 1,2,3,4 for .fits files of the IRAC instrument and on the W1,W2,W3,W4 channels for .fits files of the WISE instrument.
 
-## photUN_SPITZER.py
+## photUN.py
 
-This script deals with SPITZER channels
-
-### SPITZER_notebook.ipynb
-
-This jupyter notebook develops and explains all the steps done to obtain the photUN_SPITZER.py code to work.
-
-## photUN_WISE.py
-
-Still in development...
+This script deals with IRAC or WISE channels.
 
 ### SPITZER_notebook.ipynb
 
-Still in development...
+This jupyter notebook develops and explains all the steps done to obtain the `photUN.py IRAC` code to work.
+
+### WISE_notebook.ipynb
+
+This jupyter notebook develops and explains all the steps done to obtain the `photUN.py WISE` code to work.
 
 ## General parameters
 
