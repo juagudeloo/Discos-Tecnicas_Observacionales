@@ -22,7 +22,7 @@ Still in development...
 
 ## General parameters
 
-The scripts receive the following parameters (you can check them also by typing `python3 photUN_SPITZER.py --help` or `python3 photUN_WISE.py --help`).
+The script receive the following parameters (you can check it also by typing `python3 photUN.py --help`).
 
 ```
 usage: photUN.py [-h] -fd FITS_DIR -cad CATALOG_DIR [-od OUTPUT_DIR] [-r R]
