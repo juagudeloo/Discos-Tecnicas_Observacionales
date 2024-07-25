@@ -49,6 +49,12 @@ parser.add_argument('-v', '--verbose', dest="verbose", action='store_true')
 
 parsed_args = parser.parse_args()
 
+if not parsed_args.fits_dir.endswith("/"):
+    parsed_args.fits_dir += "/" 
+
+if not parsed_args.catalog_dir.endswith("/"):
+    parsed_args.catalog_dir += "/" 
+
 if not os.path.exists(parsed_args.output_dir):
     os.makedirs(parsed_args.output_dir)
 
@@ -160,38 +166,38 @@ def main():
 
         int_d = set(current_id[0]).intersection(*current_id) # Ejemplo para SA98: int_d = {'92_248', ... , '92_347'}
 
-    #----#  Delete the objects that are not in all the filters
-    for tab in final_filter[foc]:
-        index_of = []
-        for i in range(len(tab['ID'])):
-            if tab['ID'][i] not in int_d:
-                index_of.append(i)
-        tab.remove_rows(index_of)
+        #----#  Delete the objects that are not in all the filters
+        for tab in final_filter[foc]:
+            index_of = []
+            for i in range(len(tab['ID'])):
+                if tab['ID'][i] not in int_d:
+                    index_of.append(i)
+            tab.remove_rows(index_of)
 
-    #----# Delete the void tables.
-    for p in focus_object:
-        if len(final_filter[p][0]) == 0:
-            del final_filter[p]
+        #----# Delete the void tables.
+        for p in focus_object:
+            if len(final_filter[p][0]) == 0:
+                del final_filter[p]
 
-    for foc in final_filter.keys():
-        let = len(final_filter[foc])
-        
-        
-    #----# Create the tables for each main object.
-    for foc in final_filter.keys():
-        final_obs_table = QTable()
-        final_obs_table['OBJECT_ID'] = final_filter[foc][0]['ID']
-        final_obs_table['RA'] = final_filter[foc][0]['RA']
-        final_obs_table['DEC'] = final_filter[foc][0]['DEC']
-        #----# Save the tables as .csv files.
-        counter = 0
-        for j in final_filter[foc]:
-            final_obs_table[j.colnames[6] + '_' + str(counter//3)] = j[j.colnames[6]]
-            final_obs_table[j.colnames[7] + '_' + str(counter//3)] = j[j.colnames[7]]
-            final_obs_table[j.colnames[11] + '_' + j.colnames[6] + '_' + str(counter//3)] = j[j.colnames[11]]
-            counter += 1
-        print(f"Saving .csv for {foc} object")
-        final_obs_table.write(parsed_args.output_dir+f'/Table_{foc}.csv', overwrite=True)        
+        for foc in final_filter.keys():
+            let = len(final_filter[foc])
+            
+            
+        #----# Create the tables for each main object.
+        for foc in final_filter.keys():
+            final_obs_table = QTable()
+            final_obs_table['OBJECT_ID'] = final_filter[foc][0]['ID']
+            final_obs_table['RA'] = final_filter[foc][0]['RA']
+            final_obs_table['DEC'] = final_filter[foc][0]['DEC']
+            #----# Save the tables as .csv files.
+            counter = 0
+            for j in final_filter[foc]:
+                final_obs_table[j.colnames[6] + '_' + str(counter//3)] = j[j.colnames[6]]
+                final_obs_table[j.colnames[7] + '_' + str(counter//3)] = j[j.colnames[7]]
+                final_obs_table[j.colnames[11] + '_' + j.colnames[6] + '_' + str(counter//3)] = j[j.colnames[11]]
+                counter += 1
+            print(f"Saving .csv for {foc} object")
+            final_obs_table.write(parsed_args.output_dir+f'/Table_{foc}.csv', overwrite=True)        
 
 
     
