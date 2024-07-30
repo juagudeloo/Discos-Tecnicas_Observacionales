@@ -18,8 +18,6 @@ from astropy.io import fits
 from astropy.wcs import WCS
 from astropy.table import Table
 from astropy.stats import sigma_clipped_stats
-from astropy.table.table import QTable
-
 
 import pandas as pd
 
@@ -185,7 +183,7 @@ def main():
             
         #----# Create the tables for each main object.
         for foc in final_filter.keys():
-            final_obs_table = QTable()
+            final_obs_table = pd.DataFrame()
             final_obs_table['OBJECT_ID'] = final_filter[foc][0]['ID']
             final_obs_table['RA'] = final_filter[foc][0]['RA']
             final_obs_table['DEC'] = final_filter[foc][0]['DEC']
@@ -197,7 +195,7 @@ def main():
                 final_obs_table[j.colnames[11] + '_' + j.colnames[6] + '_' + str(counter//3)] = j[j.colnames[11]]
                 counter += 1
             print(f"Saving .csv for {foc} object")
-            final_obs_table.write(parsed_args.output_dir+f'/Table_{foc}.csv', overwrite=True)        
+            final_obs_table.to_csv(parsed_args.output_dir+f'/Table_{foc}.csv')        
 
 
     
