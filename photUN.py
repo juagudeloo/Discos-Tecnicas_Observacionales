@@ -195,7 +195,7 @@ def main():
                 final_obs_table[j.colnames[11] + '_' + j.colnames[6] + '_' + str(counter//3)] = j[j.colnames[11]]
                 counter += 1
             print(f"Saving .csv for {foc} object")
-            final_obs_table.to_csv(parsed_args.output_dir+f'/Table_{foc}.csv')        
+            final_obs_table.to_csv(parsed_args.output_dir+f'/Table_{foc}_r_{r}_ranul_{r_in}_{r_out}.csv')        
 
 
     
