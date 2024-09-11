@@ -188,12 +188,10 @@ def main():
             final_obs_table['RA'] = final_filter[foc][0]['RA']
             final_obs_table['DEC'] = final_filter[foc][0]['DEC']
             #----# Save the tables as .csv files.
-            counter = 0
             for j in final_filter[foc]:
-                final_obs_table[j.colnames[6] + '_' + str(counter//3)] = j[j.colnames[6]]
-                final_obs_table[j.colnames[7] + '_' + str(counter//3)] = j[j.colnames[7]]
-                final_obs_table[j.colnames[11] + '_' + j.colnames[6] + '_' + str(counter//3)] = j[j.colnames[11]]
-                counter += 1
+                final_obs_table[j.colnames[6]] = j[j.colnames[6]]
+                final_obs_table[j.colnames[7]] = j[j.colnames[7]]
+                final_obs_table[j.colnames[11] + '_' + j.colnames[6]] = j[j.colnames[11]]
             print(f"Saving .csv for {foc} object")
             final_obs_table.to_csv(parsed_args.output_dir+f'/Table_{foc}_r_{r}_ranul_{r_in}_{r_out}.csv')        
 
@@ -304,7 +302,7 @@ def Photometry_Data_Table(fits_name, fits_path, catalog, r, r_in, r_out, center_
     ID = ID[nn]
     Final_List = Final_List[nn]
 
-    # IDs repetidos se categorizan 
+    # Categorize repeated IDs. 
     u, c = np.unique(ID, return_counts=True)
     dup = u[c > 1]
     for j in dup:
@@ -317,50 +315,50 @@ def Photometry_Data_Table(fits_name, fits_path, catalog, r, r_in, r_out, center_
     # print a preview of the reduced catalog.
     np.set_printoptions(suppress=True, formatter={'float_kind':'{:f}'    .format})
 
-    # Se extraen los valores X y Y
+    # Extract the X and Y values.
     _, _, x_init, y_init = zip(*Final_List)
 
     x, y = centroid_sources(image, x_init, y_init, box_size = center_box_size, centroid_func=centroid_com)
     X, Y = np.array(x), np.array(y)
     NewIDS = np.array(ID) 
         
-    # Se eliminan los datos a los cuales tienen un centroide NaN o inf
+    # Eliminate the data with NaN or inf centroids.
     is_nan = ~np.isnan(X)
     x, y = X[is_nan],Y[is_nan]      
     Final_List2 = Final_List[is_nan] 
     NewIDS = NewIDS[is_nan]
 
-    # Centroides de coordenadas de las estrellas 
+    # Stars coordinates centroids.
     starloc = list(zip(x,y))
         
-    # Extracción señal de cada estrella
+    # Each star signal extraction.
     aperture = CircularAperture(starloc, r=r)
     annulus_aperture = CircularAnnulus(starloc, r_in=r_in, r_out=r_out )
     apers = [aperture, annulus_aperture]
+    
     # Se genera una tabla de datos.
     phot_table = aperture_photometry(image, apers)
 
-    # Se le asigna nombre de la magnitud dependiendo del filtro en el encabezado
+    # The name of the magnitude is assigned depending on the filter from the header.
     name_mag = str(ifilter)
 
-    # Area y fujo en los anillos. 
+    # Area and flux in the rings. 
     bkg_mean = phot_table['aperture_sum_1'] / annulus_aperture.area
     area_aper = np.array(aperture.area_overlap(image))
     bkg_sum = bkg_mean * area_aper
         
-    # Flujo final para cada objeto
+    # Final flux for each object.
     final_sum = phot_table['aperture_sum_0'] - bkg_sum
     phot_table['flux'] = final_sum
     phot_table['flux'].info.format = '%.8g'  
         
-    # Magnitudes Instrumentales
-    phot_table[name_mag + '_mag'] = zmag - 2.5 * np.log10(final_sum) + 2.5 * np.log10(itime)
+    # Instrumental magnitudes.
+    phot_table[name_mag + '_mag'] = zmag - 2.5 * np.log10(final_sum) - 2.5 * np.log10(itime)
     phot_table[name_mag + '_mag'].info.format = '%.8g'  
         
-    # Error de las Magnitudes Instrumentales
-    _, _, std = sigma_clipped_stats(image, sigma=3.0)
-    stdev = std
-    phot_table[name_mag + '_mag_err'] = 1.0857 * np.sqrt(final_sum    /epadu + area_aper*stdev**2 )/final_sum
+    # Instrumental magnitudes error.
+    _, _, stdev = sigma_clipped_stats(image, sigma=3.0)
+    phot_table[name_mag + '_mag_err'] = 1.0857 * np.sqrt(final_sum/epadu + area_aper*stdev**2 )/final_sum
     phot_table[name_mag + '_mag_err'].info.format = '%.8g'
 
     # Se agrega a la tabla la RA, DEC, ID y Masa de aire. 
